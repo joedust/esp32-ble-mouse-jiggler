@@ -2,6 +2,15 @@
 
 This is a lightweight, invisible ESP32 powered Bluetooth mouse jiggler that helps your Microsoft Teams to stay awake while you're on the toilet or for a walk with your dog.
 
+
+<table>
+  <tr>
+    <td><img src="assets/1365-1024.jpg" width="100%" /></td>
+    <td><img src="assets/807-1024.jpg" width="100%" /></td>
+  </tr>
+</table>
+
+
 ## Features
 - Bluetooth Low Energy (BLE) HID device emulation
 - Moves the mouse periodically to keep your system active
