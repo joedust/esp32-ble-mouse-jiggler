@@ -1,7 +1,7 @@
-# ESP32 Bluetooth Mouse Jiggler
+
+# ESP32 Bluetooth Low Energy (BLE) Mouse Jiggler
 
 This is a lightweight, invisible ESP32 powered Bluetooth mouse jiggler that helps your Microsoft Teams to stay awake while you're on the toilet or for a walk with your dog.
-
 
 <table>
   <tr>
@@ -10,9 +10,9 @@ This is a lightweight, invisible ESP32 powered Bluetooth mouse jiggler that help
   </tr>
 </table>
 
-
 ## Features
 - Bluetooth Low Energy (BLE) HID device emulation
+- **Powered by NimBLE-Arduino**: Efficient and lightweight BLE library for the ESP32 ([GitHub Repo](https://github.com/h2zero/NimBLE-Arduino), [Documentation](https://h2zero.github.io/esp-nimble/))
 - Moves the mouse periodically to keep your system active
 - Simple to set up with the ESP32 and Arduino framework
 
@@ -22,7 +22,7 @@ The VID and PID values used in this project correspond to specific Logitech devi
 ## Requirements
 - ESP32 board (e.g., ESP32 DevKit)
 - PlatformIO IDE or Arduino IDE for building and uploading the firmware
-- NimBLE-Arduino library for Bluetooth support
+- [NimBLE-Arduino](https://github.com/h2zero/NimBLE-Arduino) library for Bluetooth support
 
 ## Installation
 
@@ -38,7 +38,7 @@ The VID and PID values used in this project correspond to specific Logitech devi
 1. **Clone the repository**:
     - Open a terminal and run the following command to clone this project:
       ```bash
-      git clone https://github.com/joedust/esp32-bt-mouse-jiggler.git
+      git clone https://github.com/joedust/esp32-ble-mouse-jiggler.git
       ```
     
 2. Open the cloned project in **VSCode**.
