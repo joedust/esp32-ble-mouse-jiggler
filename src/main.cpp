@@ -36,7 +36,9 @@ void logError(const char *errorMessage)
 void setup()
 {
     Serial.begin(115200);
+    Serial.println("ESP32 ist bereit!");
 
+    delay(500);
     NimBLEDevice::init(DEVICE_NAME);
     NimBLEServer *pServer = NimBLEDevice::createServer();
     pServer->setCallbacks(new MyCallbacks());
@@ -48,13 +50,13 @@ void setup()
         logError("Failed to create HID device");
     }
 
-    input = hid->inputReport(1);
-    hid->manufacturer()->setValue(MANUFACTURER);
-    hid->pnp(0x02, VID, PID, 0x0110);
+    input = hid->getInputReport(1);
+    hid->setManufacturer(MANUFACTURER);
+    //hid->pnp(0x02, VID, PID, 0x0110);
 
     // HID-Informationsfeld
     // HID-Version 1.11, häufig bei modernen Geräten
-    hid->hidInfo(0x01, 0x11);
+    hid->setHidInfo(0x01, 0x11);
 
     // HID-Berichtmappe festlegen
     const uint8_t reportMap[] = {
@@ -86,11 +88,11 @@ void setup()
         0xC0,       // EndCollection()
     };
 
-    hid->reportMap((uint8_t *)reportMap, sizeof(reportMap));
+    hid->setReportMap((uint8_t *)reportMap, sizeof(reportMap));
     hid->startServices();
 
     NimBLEAdvertising *pAdvertising = NimBLEDevice::getAdvertising();
-    pAdvertising->addServiceUUID(hid->hidService()->getUUID());
+    pAdvertising->addServiceUUID(hid->getHidService()->getUUID());
     pAdvertising->setAppearance(0x03C2);
     if (!pAdvertising->start())
     {
@@ -106,18 +108,25 @@ void loop()
     {
         Serial.println("Moving mouse...");
 
-        // Maus nach rechts bewegen
-        int8_t mouseMoveRight[] = {0x00, -1, 0}; // keine Buttons, X=-1, Y=0
+        // Generate random movement value between 1 and 10
+        int8_t moveAmount = random(1, 11);  // random(1,11) gives values from 1 to 10
+
+        // Maus nach rechts bewegen (move right)
+        int8_t mouseMoveRight[] = {0x00, -moveAmount, 0}; // negative for right movement
         input->setValue((uint8_t *)mouseMoveRight, sizeof(mouseMoveRight));
         input->notify();
 
-        delay(SECOND);
+        // Random delay between 100ms and 1000ms
+        delay(random(100, 1001));
 
-        // Maus nach links bewegen
-        int8_t mouseMoveLeft[] = {0x00, 1, 0}; // keine Buttons, X=-1, Y=0
+        // Maus nach links bewegen (move left)
+        int8_t mouseMoveLeft[] = {0x00, moveAmount, 0}; // positive for left movement
         input->setValue((uint8_t *)mouseMoveLeft, sizeof(mouseMoveLeft));
         input->notify();
     }
 
-    delay(MOVE_INTERVAL);
+    // Generate random delay between 30 and 120 seconds
+    long randomDelay = random(30 * SECOND, 120 * SECOND + 1);
+    delay(randomDelay);
 }
+
