@@ -9,23 +9,23 @@ NimBLEHIDDevice *hid;
 NimBLECharacteristic *input;
 bool deviceConnected = false;
 
-// Callback-Klasse für die BLE-Events
-class MyCallbacks : public NimBLEServerCallbacks
+static NimBLEServer *pServer;
+
+class ServerCallbacks : public NimBLEServerCallbacks
 {
-    void onConnect(NimBLEServer *pServer)
+    void onConnect(NimBLEServer *pServer, NimBLEConnInfo &connInfo) override
     {
+        Serial.printf("Client connected: %s\n", connInfo.getAddress().toString().c_str());
         deviceConnected = true;
-        Serial.println("Device connected");
-        NimBLEDevice::stopAdvertising();
     }
 
-    void onDisconnect(NimBLEServer *pServer)
+    void onDisconnect(NimBLEServer *pServer, NimBLEConnInfo &connInfo, int reason) override
     {
         deviceConnected = false;
-        Serial.println("Device disconnected");
+        Serial.printf("Client disconnected: %s\n", connInfo.getAddress().toString().c_str());
         NimBLEDevice::startAdvertising();
     }
-};
+} serverCallbacks;
 
 void logError(const char *errorMessage)
 {
@@ -36,11 +36,15 @@ void logError(const char *errorMessage)
 void setup()
 {
     Serial.begin(115200);
-
+    
     NimBLEDevice::init(DEVICE_NAME);
-    NimBLEServer *pServer = NimBLEDevice::createServer();
-    pServer->setCallbacks(new MyCallbacks());
+    Serial.printf("BLE Device initialized %s\n", DEVICE_NAME);
+
+    pServer = NimBLEDevice::createServer();
+    pServer->setCallbacks(&serverCallbacks);
     NimBLEDevice::setSecurityAuth(true, false, true);
+
+    Serial.println("Security settings configured");
 
     hid = new NimBLEHIDDevice(pServer);
     if (!hid)
@@ -48,13 +52,12 @@ void setup()
         logError("Failed to create HID device");
     }
 
-    input = hid->inputReport(1);
-    hid->manufacturer()->setValue(MANUFACTURER);
-    hid->pnp(0x02, VID, PID, 0x0110);
+    input = hid->getInputReport(1);
+    hid->setManufacturer(MANUFACTURER);
+    hid->setPnp(0x02, VID, PID, 0x0110);
 
-    // HID-Informationsfeld
     // HID-Version 1.11, häufig bei modernen Geräten
-    hid->hidInfo(0x01, 0x11);
+    hid->setHidInfo(0x01, 0x11);
 
     // HID-Berichtmappe festlegen
     const uint8_t reportMap[] = {
@@ -86,11 +89,12 @@ void setup()
         0xC0,       // EndCollection()
     };
 
-    hid->reportMap((uint8_t *)reportMap, sizeof(reportMap));
+    hid->setReportMap((uint8_t *)reportMap, sizeof(reportMap));
     hid->startServices();
 
     NimBLEAdvertising *pAdvertising = NimBLEDevice::getAdvertising();
-    pAdvertising->addServiceUUID(hid->hidService()->getUUID());
+    pAdvertising->setName(DEVICE_NAME);
+    pAdvertising->addServiceUUID(hid->getHidService()->getUUID());
     pAdvertising->setAppearance(0x03C2);
     if (!pAdvertising->start())
     {
@@ -121,3 +125,4 @@ void loop()
 
     delay(MOVE_INTERVAL);
 }
+
